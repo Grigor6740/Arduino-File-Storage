@@ -327,7 +327,6 @@ void initWifiServer() {
   server.on("/view", HTTP_GET, [](AsyncWebServerRequest* request) {
     if(request->hasParam("file")) {
       String fileName = request->getParam("file")->value();
-c:\Arduino Projects\Arduino_File_Server\README.md
       if(!fileName.startsWith("/")) {
         fileName = "/" + fileName;
       }

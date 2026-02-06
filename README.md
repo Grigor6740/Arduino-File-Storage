@@ -5,6 +5,10 @@ A compact, web-based file management system running entirely on an Arduino Nano 
 <img src="images/image.png" height="400" width="700">
 <img src="images/image2.jpg" height="400" width="400">
 
+## Demo Video
+
+- Link: https://youtu.be/zvwkD2QY4dA
+
 ## 🌟 Features
 
 - **Web Interface:** Serves a fully functional HTML dashboard accessible via any browser on the local network.
