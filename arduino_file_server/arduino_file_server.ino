@@ -186,10 +186,12 @@ String listFiles(String path) {
     output += "<td>";
     if(file.isDirectory()) {
       output += "<a href='/folder-open?currentDirectory=" + path + "&folder=" + fileName + "' class='btn btn-open'>OPEN</a> ";
+      output += "<a href='/delete-folder?currentDirectory=" + path + "&folder=" + fileName + "' class='btn btn-delete'>DELETE</a> ";
     } else {
       output += "<a href='/download?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-download'>DOWNLOAD</a> ";
       output += "<a href='/delete?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-delete'>DELETE</a> ";
     }
+
     output += "</td>";
     
     output += "</tr>";
@@ -266,6 +268,36 @@ void deleteFile(String filename) {
 
   fileDeletedMessagePending = true;
   messageStartTime = millis();
+}
+
+bool deleteFolder(String path) {
+  File dir = SD.open(path);
+
+  dir.rewindDirectory();
+
+  while(true) {
+    File entry = dir.openNextFile();
+
+    if(!entry) {
+      break;
+    }
+
+    String entryPath = String(path) + "/" + entry.name();
+
+    if(entry.isDirectory()) {
+      entry.close();
+      deleteFolder(entryPath);
+    } else {
+      entry.close();
+      SD.remove(entryPath.c_str());
+    }
+  }
+
+  dir.close();
+
+  bool isDeleted = SD.rmdir(path);
+
+  return isDeleted;
 }
 
 // Init Wifi Server
@@ -416,6 +448,26 @@ void initWifiServer() {
             return myFolderProcessor(var, folderName); 
         }
     );
+  });
+
+  server.on("/delete-folder", HTTP_GET, [](AsyncWebServerRequest* request) {
+    if(request->hasParam("currentDirectory") && request->hasParam("folder")) {
+      String path = request->getParam("currentDirectory")->value() + "/" + request->getParam("folder")->value();
+
+      if(!SD.exists(path)) {
+        request->send(404, "text/plain", "Folder doesn't exists");
+      }
+
+      bool isDeleted = deleteFolder(path);
+
+      if(isDeleted) {
+        request->redirect("/");
+      } else {
+        request->send(400, "text/plain", "Deleting folder failed");
+      }
+    } else {
+      request->send(400, "text/plain", "Current directory and folder params are required.");
+    }
   });
 
   server.begin();
