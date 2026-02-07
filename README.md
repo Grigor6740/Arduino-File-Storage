@@ -2,7 +2,7 @@
 
 A compact, web-based file management system running entirely on an Arduino Nano ESP32. This project acts as a local server, allowing me to upload, download, delete, and preview files stored on an SD card via a clean HTML web interface.
 
-<img src="images/image.png" height="400" width="700">
+<img src="images/image3.png" height="400" width="700">
 <img src="images/image2.jpg" height="400" width="400">
 
 ## Demo Video
