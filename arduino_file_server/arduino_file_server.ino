@@ -29,6 +29,8 @@ AsyncWebServer server(80);
 
 File uploadFile;
 
+String currentPath;
+
 //Init oled
 void initOled() {
   if(!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
@@ -167,12 +169,9 @@ String listFiles(String path) {
 
   while (file) {
     String fileName = file.name();
-    Serial.printf("File name: ", fileName);
     double fileSizeToKB = file.size() / 1024.0;
     String fileSize = String(fileSizeToKB) + " KB";
 
-    Serial.println(fileName);
-    
     output += "<tr>";
 
     if(isFileImage(fileName)) {
@@ -203,6 +202,8 @@ String listFiles(String path) {
 String myFolderProcessor(const String& var, String path) {
   if (var == "FILE_LIST") {
     return listFiles(path);
+  } else if (var == "UPLOAD_BUTTON") {
+    return "<a href='/upload?currentPath=" + path + "' id='uploadBtn' class='btn'>[ UPLOAD ]</a>";
   }
   return String();
 }
@@ -213,7 +214,8 @@ void handleUpload(
   size_t index, 
   uint8_t *data,
   size_t len, 
-  bool final
+  bool final,
+  String currentPath
   ) {
   if(!index) {
     Serial.printf("UploadStart: %s\n", filename.c_str());
@@ -222,16 +224,13 @@ void handleUpload(
     oled.setTextColor(WHITE);
     oled.setTextSize(1);  
     oled.println("Upload Start");
-    oled.display(); 
+    oled.display();
 
-    if(!filename.startsWith("/")) {
-      filename = "/" + filename;
-    }
+    filename = currentPath + "/" + filename;
 
     if(SD.exists(filename)) {
       SD.remove(filename);
     }
-
     uploadFile = SD.open(filename, FILE_WRITE);  
   }
 
@@ -289,6 +288,9 @@ void initWifiServer() {
     Serial.println("ESP32 Web Server: New request received:");
     Serial.println("GET /upload");
 
+    currentPath = request->getParam("currentPath")->value();
+    Serial.println(currentPath);
+
     request->send(200, "text/html", UPLOAD_FILE_FORM);
   });
 
@@ -301,7 +303,7 @@ void initWifiServer() {
       request->redirect("/");
     }, 
     [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-      handleUpload(request, filename, index, data, len, final);
+      handleUpload(request, filename, index, data, len, final, currentPath);
     }
   );
 

@@ -142,7 +142,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
       >_ Arduino File Storage<span class="cursor"></span>
     </div>
     <div>
-      <a href='/upload' id="uploadBtn" class="btn">[ UPLOAD ]</a>
+      %UPLOAD_BUTTON%
       <a href='/create-folder' id="createFolderBtn" class="btn">[ CREATE FOLDER ]</a>
     </div>
   </nav>
