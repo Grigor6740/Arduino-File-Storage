@@ -175,7 +175,7 @@ String listFiles(String path) {
     output += "<tr>";
 
     if(isFileImage(fileName)) {
-      output += "<td><a href='/view?file=" + fileName + "'>" + fileName + "</a></td>";
+      output += "<td><a href='/view?currentDirectory=" + path + "&file=" + fileName + "'>" + fileName + "</a></td>";
     } else if (file.isDirectory()) {
       String folderEmoji = "\xF0\x9F\x93\x81";
       output += "<td>" + folderEmoji + fileName + "</td>";
@@ -187,8 +187,8 @@ String listFiles(String path) {
     if(file.isDirectory()) {
       output += "<a href='/folder-open?folder=" + fileName + "' class='btn btn-open'>OPEN</a>";
     } else {
-      output += "<a href='/download?file=" + fileName + "' class='btn btn-download'>DOWNLOAD</a> ";
-      output += "<a href='/delete?file=" + fileName + "' class='btn btn-delete'>DELETE</a>";
+      output += "<a href='/download?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-download'>DOWNLOAD</a> ";
+      output += "<a href='/delete?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-delete'>DELETE</a> ";
     }
     output += "</td>";
     
@@ -289,7 +289,6 @@ void initWifiServer() {
     Serial.println("GET /upload");
 
     currentPath = request->getParam("currentPath")->value();
-    Serial.println(currentPath);
 
     request->send(200, "text/html", UPLOAD_FILE_FORM);
   });
@@ -309,18 +308,17 @@ void initWifiServer() {
 
   server.on("/download", HTTP_GET, [](AsyncWebServerRequest* request) {
     Serial.println("ESP32 Web Server: New request received:");
-    Serial.println("GET /download?file=fileName");
+    Serial.println("GET /download?currentDirectory=currentDirectory?file=fileName");
 
-    if(request->hasParam("file")) {
-      String filename = "/" + request->getParam("file")->value();
+    if(request->hasParam("currentDirectory") && request->hasParam("file")) {
+      String filename = request->getParam("currentDirectory")->value() + "/" + request->getParam("file")->value();
 
       if(!SD.exists(filename)) {
         request->send(404, "text/plain", "File not found.");
       }
-      
       request->send(SD, filename, "application/octet-stream");
     } else {
-      request->send(400, "text/plain", "Missing file parameter");
+      request->send(400, "text/plain", "Missing file and current directory parameters");
     }
   });
 
@@ -328,8 +326,9 @@ void initWifiServer() {
     Serial.println("ESP32 Web Server: New request received:");
     Serial.println("GET /delete?file=fileName");
 
-    if(request->hasParam("file")) {
-      String filename = "/" + request->getParam("file")->value();
+    if(request->hasParam("currentDirectory") && request->hasParam("file")) {
+      String filename = request->getParam("currentDirectory")->value() + "/" + request->getParam("file")->value();
+      
       if(!SD.exists(filename)) {
         request->send(404, "text/plain", "File doesn't exist");
       }
@@ -338,17 +337,14 @@ void initWifiServer() {
 
       request->redirect("/");  
     } else {
-      request->send(400, "text/plain", "No file parameter");
+      request->send(400, "text/plain", "No file and current directory parameters");
     }
   });
 
   server.on("/view", HTTP_GET, [](AsyncWebServerRequest* request) {
-    if(request->hasParam("file")) {
-      String fileName = request->getParam("file")->value();
-      if(!fileName.startsWith("/")) {
-        fileName = "/" + fileName;
-      }
-
+    if(request->hasParam("currentDirectory") && request->hasParam("file")) {
+      String fileName = request->getParam("currentDirectory")->value() + "/" + request->getParam("file")->value();
+     
       if(!SD.exists(fileName)) {
         request->send(404, "text/plain", "File not found");    
       } else {
@@ -370,7 +366,7 @@ void initWifiServer() {
         request->send(SD, fileName, contentType);
       }
     } else {
-      request->send(400, "text/plain", "No file parameter");
+      request->send(400, "text/plain", "No current directory and file parameters");
     }
   });
 
