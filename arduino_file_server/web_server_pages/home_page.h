@@ -143,7 +143,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
     </div>
     <div>
       %UPLOAD_BUTTON%
-      <a href='/create-folder' id="createFolderBtn" class="btn">[ CREATE FOLDER ]</a>
+      %CREATE_FOLDER%
     </div>
   </nav>
 

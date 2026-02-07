@@ -185,7 +185,7 @@ String listFiles(String path) {
 
     output += "<td>";
     if(file.isDirectory()) {
-      output += "<a href='/folder-open?folder=" + fileName + "' class='btn btn-open'>OPEN</a>";
+      output += "<a href='/folder-open?currentDirectory=" + path + "&folder=" + fileName + "' class='btn btn-open'>OPEN</a> ";
     } else {
       output += "<a href='/download?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-download'>DOWNLOAD</a> ";
       output += "<a href='/delete?currentDirectory=" + path + "&file=" + fileName + "' class='btn btn-delete'>DELETE</a> ";
@@ -204,6 +204,8 @@ String myFolderProcessor(const String& var, String path) {
     return listFiles(path);
   } else if (var == "UPLOAD_BUTTON") {
     return "<a href='/upload?currentPath=" + path + "' id='uploadBtn' class='btn'>[ UPLOAD ]</a>";
+  } else if (var == "CREATE_FOLDER") {
+    return "<a href='/create-folder?currentPath=" + path + "' id='createFolderBtn' class='btn'>[ CREATE FOLDER ]</a>";
   }
   return String();
 }
@@ -371,6 +373,10 @@ void initWifiServer() {
   });
 
   server.on("/create-folder", HTTP_GET, [](AsyncWebServerRequest* request) {
+    currentPath = request->getParam("currentPath")->value();
+
+    Serial.println(currentPath);
+
     request->send_P(200, "text/html", CRATE_FOLDER_FORM);
   });
 
@@ -383,7 +389,7 @@ void initWifiServer() {
       request->send(400, "text/plain", "Folder name is required.");
     }
 
-    String folderName = "/" + request->getParam("folder-name", true)->value();
+    String folderName = currentPath + "/" + request->getParam("folder-name", true)->value();
 
     if(SD.exists(folderName)) {
       request->send(400, "text/plain", "Folder already exists");
@@ -395,11 +401,11 @@ void initWifiServer() {
   });
 
   server.on("/folder-open", HTTP_GET, [](AsyncWebServerRequest* request) {
-    if(!request->hasParam("folder")) {
-      request->send(400, "text/plain", "Folder parameter is requered");
+    if(!request->hasParam("folder") && !request->hasParam("currentDirectory")) {
+      request->send(400, "text/plain", "Current directory and folder parameters are requered");
     }
 
-    String folderName = "/" + request->getParam("folder")->value();
+    String folderName = request->getParam("currentDirectory")->value() + "/" + request->getParam("folder")->value();
 
     if(!SD.exists(folderName)) {
       request->send(404, "text/plain", "Folder doesn't exists");
