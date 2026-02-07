@@ -7,16 +7,18 @@ A compact, web-based file management system running entirely on an Arduino Nano 
 
 ## Demo Video
 
-- Link: https://youtu.be/zvwkD2QY4dA
+- Link: https://youtu.be/zvwkD2QY4dA -> This video is made before adding the folders and subfolders
+- Link 2: https://youtu.be/vIn5s5bZ7JU -> Includes folders and subfolders 
 
 ## 🌟 Features
 
 - **Web Interface:** Serves a fully functional HTML dashboard accessible via any browser on the local network.
-- **File Management:**
-  - **List:** View all files stored on the SD card.
+- **Folders and Files Management:**
+  - **List:** View all files and folders stored on the SD card.
   - **Upload:** Wireless file transfer from computer/phone to the SD card.
   - **Download:** Retrieve files from the SD card.
-  - **Delete:** Remove unwanted files.
+  - **Delete:** Remove unwanted files, folders and subfolders.
+  - **Create:** Create folders and subfolders on the SD card
 - **Image Preview:** Click on image filenames to view them directly in the browser.
 - **Status Display:** 128x32 OLED screen shows real-time connection status and IP address.
 
