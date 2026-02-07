@@ -53,6 +53,11 @@ const char PAGE_CSS[] PROGMEM = R"=====(
   .btn:hover { background: #00FF41; color: #000; box-shadow: 0 0 10px #00FF41; }
 
   .btn-delete { border-color: #FF3333; color: #FF3333; margin-left: 5px; }
+  .btn-open {
+    border-color: #FFFF00;
+    color: #FFFF00;
+  }
+
   .btn-delete:hover { background: #FF3333; color: #000; box-shadow: 0 0 10px #FF3333; }
 
   .btn-download { border-color: #00FFFF; color: #00FFFF; }
@@ -127,6 +132,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset='UTF-8'>
   <title>Arduino File Storage</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
 </head>
@@ -137,6 +143,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
     </div>
     <div>
       <a href='/upload' id="uploadBtn" class="btn">[ UPLOAD ]</a>
+      <a href='/create-folder' id="createFolderBtn" class="btn">[ CREATE FOLDER ]</a>
     </div>
   </nav>
 

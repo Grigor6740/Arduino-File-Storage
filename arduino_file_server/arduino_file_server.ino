@@ -8,6 +8,7 @@
 #include "SPI.h"
 #include "web_server_pages/home_page.h"
 #include "web_server_pages/upload_file_form.h"
+#include "web_server_pages/create-folder.h"
 
 #define OLED_WIDTH 128 
 #define OLED_HEIGHT 32
@@ -159,38 +160,49 @@ bool isFileImage(String fileName) {
   }
 }
 
-String processor(const String& var) {
-  if (var == "FILE_LIST") {
-    String output = "";
-    File root = SD.open("/");
-    File file = root.openNextFile();
+String listFiles(String path) {
+  String output = "";
+  File root = SD.open(path);
+  File file = root.openNextFile();
 
-    while (file) {
-      String fileName = file.name();
-      Serial.printf("File name: ", fileName);
-      double fileSizeToKB = file.size() / 1024.0;
-      String fileSize = String(fileSizeToKB) + " KB";
+  while (file) {
+    String fileName = file.name();
+    Serial.printf("File name: ", fileName);
+    double fileSizeToKB = file.size() / 1024.0;
+    String fileSize = String(fileSizeToKB) + " KB";
 
-      Serial.println(fileName);
-      
-      output += "<tr>";
+    Serial.println(fileName);
+    
+    output += "<tr>";
 
-      if(isFileImage(fileName)) {
-        output += "<td><a href='/view?file=" + fileName + "'>" + fileName + "</a></td>";
-      } else {
-        output += "<td>" + fileName + "</td>";
-      }
+    if(isFileImage(fileName)) {
+      output += "<td><a href='/view?file=" + fileName + "'>" + fileName + "</a></td>";
+    } else if (file.isDirectory()) {
+      String folderEmoji = "\xF0\x9F\x93\x81";
+      output += "<td>" + folderEmoji + fileName + "</td>";
+    } else {
+      output += "<td>" + fileName + "</td>";
+    }
 
-      output += "<td>";
+    output += "<td>";
+    if(file.isDirectory()) {
+      output += "<a href='/folder-open?folder=" + fileName + "' class='btn btn-open'>OPEN</a>";
+    } else {
       output += "<a href='/download?file=" + fileName + "' class='btn btn-download'>DOWNLOAD</a> ";
       output += "<a href='/delete?file=" + fileName + "' class='btn btn-delete'>DELETE</a>";
-      output += "</td>";
-      
-      output += "</tr>";
-      
-      file = root.openNextFile();
     }
-    return output;
+    output += "</td>";
+    
+    output += "</tr>";
+    
+    file = root.openNextFile();
+  }
+  return output;
+}
+
+String myFolderProcessor(const String& var, String path) {
+  if (var == "FILE_LIST") {
+    return listFiles(path);
   }
   return String();
 }
@@ -262,7 +274,11 @@ void initWifiServer() {
     Serial.println("ESP32 Web Server: New request received:"); 
     Serial.println("GET /");       
 
-    request->send_P(200, "text/html", INDEX_HTML, processor); 
+    request->send_P(200, "text/html", INDEX_HTML, 
+        [](const String& var) -> String { 
+            return myFolderProcessor(var, "/"); 
+        }
+    );
   }); 
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest* request) {
@@ -356,12 +372,46 @@ void initWifiServer() {
     }
   });
 
-  // test endpoint
-  server.on("/details", HTTP_GET, [](AsyncWebServerRequest* request) {
-    Serial.println("ESP32 Web Server: New request received:");  
-    Serial.println("GET /");       
+  server.on("/create-folder", HTTP_GET, [](AsyncWebServerRequest* request) {
+    request->send_P(200, "text/html", CRATE_FOLDER_FORM);
+  });
 
-    request->send(200, "text/html", "<html><body><h1>Hello! My name is Grigor Marinov.</h1></body></html>");
+  server.on("/create_folder_page.css", HTTP_GET, [](AsyncWebServerRequest* request) {
+    request->send_P(200, "text/css", CREATE_FOLDER_FORM_CSS);
+  });
+
+  server.on("/create-folder", HTTP_POST, [](AsyncWebServerRequest* request) {
+    if(!request->hasParam("folder-name", true)) {
+      request->send(400, "text/plain", "Folder name is required.");
+    }
+
+    String folderName = "/" + request->getParam("folder-name", true)->value();
+
+    if(SD.exists(folderName)) {
+      request->send(400, "text/plain", "Folder already exists");
+    }
+
+    SD.mkdir(folderName);
+
+    request->redirect("/");
+  });
+
+  server.on("/folder-open", HTTP_GET, [](AsyncWebServerRequest* request) {
+    if(!request->hasParam("folder")) {
+      request->send(400, "text/plain", "Folder parameter is requered");
+    }
+
+    String folderName = "/" + request->getParam("folder")->value();
+
+    if(!SD.exists(folderName)) {
+      request->send(404, "text/plain", "Folder doesn't exists");
+    }
+
+    request->send_P(200, "text/html", INDEX_HTML, 
+        [folderName](const String& var) -> String { 
+            return myFolderProcessor(var, folderName); 
+        }
+    );
   });
 
   server.begin();
