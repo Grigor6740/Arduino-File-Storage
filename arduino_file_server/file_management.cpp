@@ -23,7 +23,7 @@ bool isFileImage(String fileName) {
   }
 }
 
-// This logic is wrong
+/// This logic is very slow and it blocks the other logic like uploading
 // uint64_t getFolderSizeBytes(String folderPath) {
 //   uint64_t totalSizeInBytes = 0;
 //   File root = SD.open(folderPath);
@@ -85,10 +85,7 @@ String listFiles(String path) {
     }
 
     if(file.isDirectory()) {
-      // double folderSizeInKbs = getFolderSizeKB(path);
-      // String folderSizeInKbsToString = String(folderSizeInKbs) + " KB";
-      // Serial.println(folderSizeInKbsToString);
-      // output += "<td>" + folderSizeInKbsToString + "</td>";
+      output += "<td>-</td>";
     } else {
       output += "<td>" + fileSize + "</td>";
     }
