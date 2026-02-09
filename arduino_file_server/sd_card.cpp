@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "sd_card.h"
 
 uint64_t card_size_in_gb = 0;
@@ -67,15 +68,29 @@ void initSDCard() {
   card_size_in_gb = card_size_in_mb / 1000;
 
   uint64_t used_bytes = SD.usedBytes();
+
   uint64_t used_mbs = used_bytes / (1024.0 * 1024.0);
   uint64_t used_gbs = used_mbs / 1000;
+  uint64_t used_kbs = used_mbs * 1024;
 
-  Serial.printf("Used: %lluGB / Total: %lluGB\n", used_gbs, card_size_in_gb);
+  String output;
+
+  if(used_gbs <= 0) {
+    if(used_kbs > 0) {
+      output = "Used: " + String((unsigned long)used_kbs) + "KB / Total: " + String((unsigned long)card_size_in_gb) + "GB\n";
+    } else if (used_kbs <= 0) {
+      output = "Used: " + String((unsigned long)used_mbs) + "MB / Total: " + String((unsigned long)card_size_in_gb) + "GB\n";
+    }
+  } else {
+    output = "Used: " + String((unsigned long)used_gbs) + "GB / Total: " + String((unsigned long)card_size_in_gb) + "GB\n";
+  }
+
+  Serial.println(output);
 
   oled.clearDisplay();
   oled.setCursor(0, 10);      
   oled.setTextColor(WHITE);
   oled.setTextSize(1); 
-  oled.printf("Used: %lluGB / Total: %lluGB\n", used_gbs, card_size_in_gb);
+  oled.println(output);
   oled.display(); 
 }
