@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef FILE_MANAGEMENT_H
 #define FILE_MANAGEMENT_H
 
@@ -13,6 +14,8 @@ extern bool fileUplodedMessagePending;
 extern unsigned long messageStartTime;
 
 bool isFileImage(String fileName);
+// uint64_t getFolderSizeBytes(String folderPath);
+// double getFolderSizeKB(String folderPath);
 String listFiles(String path);
 String myFolderProcessor(const String& var, String path);
 void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final, String currentPath);

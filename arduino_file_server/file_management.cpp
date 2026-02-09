@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "USBCDC.h"
 #include "file_management.h"
 #include "icons.h"
@@ -22,6 +23,44 @@ bool isFileImage(String fileName) {
   }
 }
 
+// This logic is wrong
+// uint64_t getFolderSizeBytes(String folderPath) {
+//   uint64_t totalSizeInBytes = 0;
+//   File root = SD.open(folderPath);
+
+//   if(!root) {
+//     return 0;
+//   }
+
+//   if(!root.isDirectory()) {
+//     uint64_t fileSize = root.size();
+//     root.close();
+
+//     return fileSize;
+//   }
+
+//   File file = root.openNextFile();
+
+//   while(file) {
+//     if(file.isDirectory()) {
+//       totalSizeInBytes += getFolderSizeBytes(file.path());
+//     } else {
+//       totalSizeInBytes += file.size();
+//     }
+
+//     file.close();
+//     file = root.openNextFile();
+//   }
+
+//   root.close();
+//   return totalSizeInBytes;
+// }
+
+// double getFolderSizeKB(String folderPath) {
+//   uint64_t sizeBytes = getFolderSizeBytes(folderPath);
+//   return (double)sizeBytes / 1024.0;
+// }
+
 String listFiles(String path) {
   String output = "";
   File root = SD.open(path);
@@ -30,6 +69,7 @@ String listFiles(String path) {
   while (file) {
     String fileName = file.name();
     double fileSizeToKB = file.size() / 1024.0;
+
     String fileSize = String(fileSizeToKB) + " KB";
 
     output += "<tr>";
@@ -44,7 +84,14 @@ String listFiles(String path) {
       output += "<td>" + fileIcon + fileName + "</td>";
     }
 
-    output += "<td>" + fileSize + "</td>";
+    if(file.isDirectory()) {
+      // double folderSizeInKbs = getFolderSizeKB(path);
+      // String folderSizeInKbsToString = String(folderSizeInKbs) + " KB";
+      // Serial.println(folderSizeInKbsToString);
+      // output += "<td>" + folderSizeInKbsToString + "</td>";
+    } else {
+      output += "<td>" + fileSize + "</td>";
+    }
 
     output += "<td>";
     if(file.isDirectory()) {
@@ -71,6 +118,15 @@ String myFolderProcessor(const String& var, String path) {
     return "<a href='/upload?currentPath=" + path + "' id='uploadBtn' class='btn'>[ UPLOAD ]</a>";
   } else if (var == "CREATE_FOLDER") {
     return "<a href='/create-folder?currentPath=" + path + "' id='createFolderBtn' class='btn'>[ CREATE FOLDER ]</a>";
+  } else if (var == "DIRECTORY") {
+    String directory;
+    if(path == "/") {
+      directory = "Root";
+    } else {
+      directory = path;
+    }
+
+    return directory;
   }
   return String();
 }

@@ -142,6 +142,9 @@ const char INDEX_HTML[] PROGMEM = R"=====(
       >_ Arduino File Storage<span class="cursor"></span>
     </div>
     <div>
+      Current Durectory: %DIRECTORY% 
+    </div>
+    <div>
       %UPLOAD_BUTTON%
       %CREATE_FOLDER%
     </div>
