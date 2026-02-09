@@ -23,7 +23,7 @@ bool isFileImage(String fileName) {
   }
 }
 
-/// This logic is very slow and it blocks the other logic like uploading
+/// This logic is very slow and it blocks the other logic for uploading
 // uint64_t getFolderSizeBytes(String folderPath) {
 //   uint64_t totalSizeInBytes = 0;
 //   File root = SD.open(folderPath);
@@ -78,8 +78,6 @@ String listFiles(String path) {
 
     if(isFileImage(fileName)) {
       output += "<td>" + fileIcon + " <a href='/view?currentDirectory=" + path + "&file=" + fileName + "'>" + fileName + "</a></td>";
-    } else if (file.isDirectory()) {
-      output += "<td>" + fileIcon + fileName + "</td>";
     } else {
       output += "<td>" + fileIcon + fileName + "</td>";
     }
