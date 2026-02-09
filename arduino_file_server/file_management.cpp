@@ -1,4 +1,6 @@
+#include "USBCDC.h"
 #include "file_management.h"
+#include "icons.h"
 
 File uploadFile;
 String currentPath;
@@ -32,14 +34,17 @@ String listFiles(String path) {
 
     output += "<tr>";
 
+    String fileIcon = getFileIcon(file);
+
     if(isFileImage(fileName)) {
-      output += "<td><a href='/view?currentDirectory=" + path + "&file=" + fileName + "'>" + fileName + "</a></td>";
+      output += "<td>" + fileIcon + " <a href='/view?currentDirectory=" + path + "&file=" + fileName + "'>" + fileName + "</a></td>";
     } else if (file.isDirectory()) {
-      String folderEmoji = "\xF0\x9F\x93\x81";
-      output += "<td>" + folderEmoji + fileName + "</td>";
+      output += "<td>" + fileIcon + fileName + "</td>";
     } else {
-      output += "<td>" + fileName + "</td>";
+      output += "<td>" + fileIcon + fileName + "</td>";
     }
+
+    output += "<td>" + fileSize + "</td>";
 
     output += "<td>";
     if(file.isDirectory()) {
@@ -156,4 +161,25 @@ bool deleteFolder(String path) {
   bool isDeleted = SD.rmdir(path);
 
   return isDeleted;
+}
+
+String getFileIcon(File file) {
+
+  if (file.isDirectory()) return ICON_FOLDER;
+
+  String filename = file.name();
+
+  filename.toUpperCase();
+
+  // Documents
+  if (filename.endsWith(".PDF")) return ICON_PDF;
+  if (filename.endsWith(".DOC") || filename.endsWith(".DOCX")) return ICON_WORD;
+  if (filename.endsWith(".TXT") || filename.endsWith(".LOG") || filename.endsWith(".CSV")) return ICON_TEXT;
+  if (filename.endsWith(".XLS") || filename.endsWith(".XLSX")) return ICON_EXCEL;
+
+  // Media
+  if (filename.endsWith(".JPG") || filename.endsWith(".PNG") || filename.endsWith(".JPEG") || filename.endsWith(".GIF")) return ICON_IMAGE;
+  if (filename.endsWith(".MP3") || filename.endsWith(".WAV")) return ICON_AUDIO;
+
+  return ICON_UNK;
 }

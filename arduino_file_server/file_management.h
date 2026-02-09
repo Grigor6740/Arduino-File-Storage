@@ -18,5 +18,6 @@ String myFolderProcessor(const String& var, String path);
 void handleUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final, String currentPath);
 void deleteFile(String filename);
 bool deleteFolder(String path);
+String getFileIcon(File file);
 
 #endif
